@@ -29,22 +29,24 @@ class SaltCollector(object):
 
     def _setup_empty_prometheus_metrics(self, record):
         # The metrics we want to export.
-        names = set(['is_running', 'minions'])
+        names = {'is_running', 'minions'}
         self._prometheus_metrics = {}
         for k, v in record.iteritems():
             if k not in names:
                 continue
             if k != 'minions':
                 self._prometheus_metrics[k] = GaugeMetricFamily('salt_master_{}'.format(k),
-                                                                       'salt_master_{}'.format(k),
-                                                                       value=v,
-                                                                       labels=None)
+                                                                'salt_master_{}'.format(k),
+                                                                value=v,
+                                                                labels=None)
             else:
                 for k1, v1 in v.iteritems():
-                    self._prometheus_metrics["minions_{}".format(k1)] = GaugeMetricFamily('salt_master_minions_{}'.format(k1),
-                                                                                          'salt_master_minions_{}'.format(k1),
-                                                                                          value=v1,
-                                                                                          labels=None)
+                    self._prometheus_metrics["minions_{}".format(k1)] = GaugeMetricFamily(
+                        'salt_master_minions_{}'.format(k1),
+                        'salt_master_minions_{}'.format(k1),
+                        value=v1,
+                        labels=None)
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -67,18 +69,20 @@ def parse_args():
     )
     return parser.parse_args()
 
+
 def main():
     try:
         args = parse_args()
         port = int(args.port)
         REGISTRY.register(SaltCollector(args.filename, args.port))
         start_http_server(port)
-        print "Polling %s. Serving at port: %s" % (args.filename, port)
+        print("Polling %s. Serving at port: %s" % (args.filename, port))
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
         print(" Interrupted")
         exit(0)
+
 
 if __name__ == "__main__":
     main()
